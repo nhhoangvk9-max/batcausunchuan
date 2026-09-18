@@ -4,6 +4,7 @@ const cors = require('cors');
 const fetch = require('node-fetch');
 
 const app = express();
+// Render cấp PORT động qua biến môi trường
 const PORT = process.env.PORT || 3000;
 const API_GOC = 'https://sunwin-taixiu-dulieu.onrender.com/data';
 
@@ -47,7 +48,6 @@ function taoChuoi(items) {
    CÁC HÀM PHÂN TÍCH CẦU
    ================================================================ */
 
-// mã hóa run
 function maHoaRun(seq) {
   const runs = [];
   if (!seq.length) return runs;
@@ -60,7 +60,6 @@ function maHoaRun(seq) {
   return runs;
 }
 
-// cầu 1-1
 function cau11(seq, cuaSo = 20) {
   const data = seq.slice(-cuaSo);
   if (data.length < 5) return null;
@@ -78,7 +77,6 @@ function cau11(seq, cuaSo = 20) {
   return null;
 }
 
-// cầu 2-2
 function cau22(seq) {
   const runs = maHoaRun(seq);
   if (runs.length < 6) return null;
@@ -96,7 +94,6 @@ function cau22(seq) {
   return null;
 }
 
-// cầu 3-3
 function cau33(seq) {
   const runs = maHoaRun(seq);
   if (runs.length < 6) return null;
@@ -114,7 +111,6 @@ function cau33(seq) {
   return null;
 }
 
-// cầu 4-4
 function cau44(seq) {
   const runs = maHoaRun(seq);
   if (runs.length < 6) return null;
@@ -131,7 +127,6 @@ function cau44(seq) {
   return null;
 }
 
-// cầu 1-2-1
 function cau121(seq) {
   const runs = maHoaRun(seq);
   if (runs.length < 3) return null;
@@ -145,7 +140,6 @@ function cau121(seq) {
   return null;
 }
 
-// cầu 1-2-2-1
 function cau1221(seq) {
   const runs = maHoaRun(seq);
   if (runs.length < 4) return null;
@@ -159,7 +153,6 @@ function cau1221(seq) {
   return null;
 }
 
-// bậc thang
 function bacThang(seq) {
   const runs = maHoaRun(seq);
   if (runs.length < 4) return null;
@@ -176,7 +169,6 @@ function bacThang(seq) {
   return null;
 }
 
-// markov 1
 function markov1(seq) {
   let TT = 0, TX = 0, XT = 0, XX = 0;
   for (let i = 1; i < seq.length; i++) {
@@ -199,7 +191,6 @@ function markov1(seq) {
   };
 }
 
-// markov N
 function markovN(seq, bac) {
   if (seq.length < bac + 3) return null;
   const map = {};
@@ -222,7 +213,6 @@ function markovN(seq, bac) {
   };
 }
 
-// pattern lặp
 function timPattern(seq, doDai) {
   if (seq.length < doDai + 2) return null;
   const pattern = seq.slice(-doDai).join('');
@@ -243,7 +233,6 @@ function timPattern(seq, doDai) {
   };
 }
 
-// entropy
 function tinhEntropy(seq) {
   if (!seq.length) return 0;
   const t = seq.filter(x => x === 'TAI').length / seq.length;
@@ -267,7 +256,6 @@ function duDoanEntropy(seq) {
   return null;
 }
 
-// tần suất
 function tanSuat(seq, cuaSo) {
   if (seq.length < cuaSo) return null;
   const data = seq.slice(-cuaSo);
@@ -285,7 +273,6 @@ function tanSuat(seq, cuaSo) {
   return null;
 }
 
-// đảo chiều
 function daoChieu(seq) {
   const runs = maHoaRun(seq);
   if (!runs.length) return null;
@@ -295,7 +282,6 @@ function daoChieu(seq) {
   return null;
 }
 
-// sóng ngắn
 function songNgan(seq) {
   if (seq.length < 5) return null;
   const d = seq.slice(-5);
@@ -305,7 +291,6 @@ function songNgan(seq) {
   return null;
 }
 
-// momentum
 function momentum(seq) {
   if (seq.length < 10) return null;
   const s10 = seq.slice(-10), s5 = seq.slice(-5);
@@ -316,7 +301,6 @@ function momentum(seq) {
   return null;
 }
 
-// chu kỳ
 function chuKy(seq) {
   if (seq.length < 20) return null;
   let best = null;
@@ -336,7 +320,6 @@ function chuKy(seq) {
   return null;
 }
 
-// cầu 3-2-1
 function cau321(seq) {
   const runs = maHoaRun(seq);
   if (runs.length < 3) return null;
@@ -350,7 +333,6 @@ function cau321(seq) {
   return null;
 }
 
-// cầu 2-1-1
 function cau211(seq) {
   const runs = maHoaRun(seq);
   if (runs.length < 3) return null;
@@ -426,7 +408,20 @@ function phanTichTongHop(seq) {
    ROUTES
    ================================================================ */
 
-// dữ liệu gốc đã chuẩn hóa
+// trang chủ
+app.get('/', (req, res) => {
+  res.json({
+    name: 'API Thuật Toán Cầu Tài Xỉu By nghuyhoang',
+    endpoints: {
+      '/data': 'dữ liệu gốc đã chuẩn hóa',
+      '/predict': 'dự đoán phiên tiếp theo',
+      '/stats': 'thống kê chi tiết',
+      '/predict/multi?n=5': 'dự đoán nhiều phiên',
+      '/health': 'kiểm tra server'
+    }
+  });
+});
+
 app.get('/data', async (req, res) => {
   try {
     const items = await layDuLieu();
@@ -440,7 +435,6 @@ app.get('/data', async (req, res) => {
   }
 });
 
-// dự đoán phiên tiếp theo
 app.get('/predict', async (req, res) => {
   try {
     const items = await layDuLieu();
@@ -469,7 +463,6 @@ app.get('/predict', async (req, res) => {
   }
 });
 
-// thống kê chi tiết
 app.get('/stats', async (req, res) => {
   try {
     const items = await layDuLieu();
@@ -479,14 +472,12 @@ app.get('/stats', async (req, res) => {
     const xiu = seq.length - tai;
     const chuoiDaiNhat = Math.max(...runs.map(r => r.length));
 
-    // thống kê tổng điểm
     const demTong = {};
     items.forEach(x => {
       const t = x.tong;
       if (t) demTong[t] = (demTong[t] || 0) + 1;
     });
 
-    // phân bố độ dài run
     const phanBoRun = {};
     runs.forEach(r => { phanBoRun[r.length] = (phanBoRun[r.length] || 0) + 1; });
 
@@ -509,7 +500,6 @@ app.get('/stats', async (req, res) => {
   }
 });
 
-// dự đoán nhiều phiên (mô phỏng)
 app.get('/predict/multi', async (req, res) => {
   try {
     const n = parseInt(req.query.n) || 5;
@@ -539,18 +529,12 @@ app.get('/predict/multi', async (req, res) => {
   }
 });
 
-// health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
-// khởi động
 app.listen(PORT, () => {
-  console.log(`[CAU API] server chạy tại http://localhost:${PORT}`);
-  console.log(`[CAU API] /data - dữ liệu gốc`);
-  console.log(`[CAU API] /predict - dự đoán phiên tiếp`);
-  console.log(`[CAU API] /stats - thống kê chi tiết`);
-  console.log(`[CAU API] /predict/multi?n=5 - dự đoán nhiều phiên`);
+  console.log(`[CAU API] server chạy tại cổng ${PORT}`);
 });
 
 module.exports = app;
